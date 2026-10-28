@@ -1,0 +1,371 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": "suknesaraswati24@gmail.com"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -368,
+        -80
+      ],
+      "id": "184e8f5e-c9c0-4ba2-ad2b-bc7e20796ff5",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "h1siCuzk3B4QBMUT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Give the code below\ncode:\n{{ $json.text }}\n\n\ngenerate comments for the code so that i can understand what each line of the code does\n\nNOTE:Do not modify the existing code lines at all Just add the comments wherever required.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "you are a helpful assistant and know how to write code in python.you can help me to understand the code by adding comments to it."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -96,
+        -272
+      ],
+      "id": "b5f6d93e-0ca2-4676-8e68-7de52b8ea130",
+      "name": "Comment_addition"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        -48
+      ],
+      "id": "75b7d879-4248-44fd-a79e-481793f894a8",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FxnB8oXmIWUd7Bf0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Given the code below\ncode: {{ $json.text }}\n\ngrnerate a summary of what this code does in very simple language.Do note that the summary should contain all the important details there are in the code so that i know what the code is about in a quick glance",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "you are an expert in python code. you have the ability to summarize code in simple language and have the knack to cover important details in the summary"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -64,
+        160
+      ],
+      "id": "271e26fd-cb72-4413-839b-dc980c530990",
+      "name": "code_summary"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        384
+      ],
+      "id": "8a39a94f-ea4a-4d02-8d3b-13f9410b861b",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FxnB8oXmIWUd7Bf0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        352,
+        -64
+      ],
+      "id": "8d4e1dee-cf6f-4489-928a-2725b30ad0a3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -64
+      ],
+      "id": "7303c83e-295e-4d4b-a797-c4954b85777b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5ba012dc-352e-49c5-9939-56154ccb6975",
+              "name": "Message",
+              "value": "=Code with Comments:\n{{ $json.text[0] }}\nCode Summary:\n{{ $json.text[1] }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        832,
+        -64
+      ],
+      "id": "cae64c64-881b-4513-9e33-16a2da06b11d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Convert the message into html format,\nInclude Proper code blocks wherever necessary .The code blocks should have syntax highlighting for the specific language used in the code \n\nMessage:{{ $json.Message }}\n ",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "you can convert any message into html format that can be sent on mail to the user"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1040,
+        -64
+      ],
+      "id": "c14c1444-a045-4ffb-971b-9de99b85086b",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        192
+      ],
+      "id": "2ecb5111-526c-4223-8269-0f61d2993e9c",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FxnB8oXmIWUd7Bf0",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "suknesaraswati8@gmail.com",
+        "subject": "Code summary and comments",
+        "message": "={{ $json.text }}\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1424,
+        -64
+      ],
+      "id": "0688b454-3261-4df7-8c9c-61c67b67fa0e",
+      "name": "Send a message",
+      "webhookId": "5fac43eb-04f2-4cfa-b801-d55f49d85eb9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "h1siCuzk3B4QBMUT",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Comment_addition",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "code_summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Comment_addition",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "code_summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comment_addition": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_summary": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "cbd92b7e-1faf-4bed-a588-4cda853bb5cd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d5a25acf7cd91b1a92ce01c85ebd3e3a8f987a7f6c845026f831dc739f49775b"
+  },
+  "nodeGroups": [],
+  "id": "0o05XNxIBvGxRRr9",
+  "tags": []
+}
